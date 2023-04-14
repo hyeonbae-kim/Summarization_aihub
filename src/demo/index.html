@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+	<style>
+		.custom-range::-webkit-slider-thumb {
+			background: #17A2B7;
+		}
+
+		.custom-range::-webkit-slider-thumb:active {
+			background-color: #1cc5df;
+		}
+
+		.custom-range:focus::-webkit-slider-thumb {
+			box-shadow: 0 0 0 1px #fff, 0 0 0 0.2rem rgba(9, 64, 72, 0.25);
+		}
+
+		.mark {
+			background-color: #1cc5df;
+		}
+	</style>
+
+	<title>Summarization demo (Korean) &ndash; 42Maru</title>
+	<link rel="icon" type="image/svg+xml" sizes="any" href="https://gist.githubusercontent.com/Colanim/6f6b93e73b2373242705b43679c3816f/raw/1a37dde04b5913bc502370cecbf66d5d05d49117/42maru_logo.svg"/>
+</head>
+
+<body>
+	<h2 class="content-head text-center py-5">42Maru : Text Summarization demo</h2>
+	<div class="container">
+		<div class="row">
+			<form class="col-lg-6 offset-lg-3">
+				<div class="d-flex justify-content-between">
+					<div>
+						<select id="select" class="form-control" onchange="updatedefaultarticle();">
+							<option>직접입력</option>
+							<option>그런데 인간의...</option>
+							<option>이탈리아도 1990년...</option>
+							<option>일반적으로 상업영화...</option>
+							<option>뉴런은 ‘안전장치’를...</option>
+							<option>키즈액티비티플랫폼...</option>
+							<option>유럽연합(EU)이 내년...</option>
+						</select>
+					</div>
+					<div>
+						<div class="btn-group" data-toggle="buttons">
+							<label class="btn btn-info active">
+								<input type="radio" name="mode" value="abstractive" onclick="changeMode(this);" checked
+									style="display: none;"> 생성요약
+							</label>
+							<label class="btn btn-info">
+								<input type="radio" name="mode" value="extractive" onclick="changeMode(this);"
+									style="display: none;"> 추출요약
+							</label>
+						</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<br>
+					<label for="textarea">Article</label>
+					<div contenteditable="true" id="textarea" class="form-control"
+						style="height: 20em; overflow-y: scroll"></div>
+				</div>
+				<div class="form-group" id="warningdiv" display="none">
+					<p id="warning" class="text-warning"></p>
+				</div>
+				<br>
+				<div id="abstractive-control">
+					<button type="button" class="btn btn-outline-info" onclick="summarize();"
+						style="border-width: 0.1rem; border-radius: 0.5rem">
+						<div id="repos">
+							Summarize
+						</div>
+						<div id="actif" style="display: none;">
+							<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+							Summarizing...
+						</div>
+					</button>
+				</div>
+				<div id="extractive-control" style="display: none;">
+					<button type="button" class="btn btn-sm btn-outline-info" onclick="topk_minus();"
+						style="border-radius: 0.5rem; width: 2em">-</button>
+					<button type="button" class="btn btn-outline-info" onclick="ext_summarize();"
+						style="border-width: 0.1rem; border-radius: 0.5rem">
+						<div id="ext-repos">
+							Extract 3
+						</div>
+						<div id="ext-actif" style="display: none;">
+							<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+							Extracting...
+						</div>
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-info" onclick="topk_plus();"
+						style="border-radius: 0.5rem; width: 2em">+</button>
+				</div>
+			</form>
+		</div>
+		<div class="row" id="errordiv" display="none">
+			<p id="error" class="col-lg-6 offset-lg-3 text-danger pt-5"></p>
+		</div>
+		<div class="row">
+			<p id="results" class="col-lg-6 offset-lg-3 text-info pt-5"></p>
+		</div>
+	</div>
+
+
+	<!-- Optional JavaScript -->
+	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js"
+		integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+		integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+		crossorigin="anonymous"></script>
+	<script type="text/javascript">
+		function show_working() {
+			$("#repos").hide();
+			$("#actif").show();
+			$('#results').css({ opacity: 0.5 });
+		}
+
+		function show_done() {
+			$("#actif").hide();
+			$("#repos").show();
+			$('#results').css({ opacity: 1 });
+		}
+
+		function changeMode(rad) {
+			if (rad.value == "extractive") {
+				$("#abstractive-control").hide();
+				$("#extractive-control").show();
+				reset_results();
+			} else if (rad.value == "abstractive") {
+				$("#abstractive-control").show();
+				$("#extractive-control").hide();
+				reset_highlight();
+			}
+			reset_errors();
+			reset_warnings();
+		}
+
+		function reset_results() {
+			$("#results").text("");
+		}
+
+		function reset_errors() {
+			$("#errordiv").hide();
+			$("#error").text("");
+		}
+
+		function show_error(str) {
+			$("#errordiv").show();
+			$("#error").text(str);
+        }
+
+		function reset_warnings() {
+			$("#warningdiv").hide();
+			$("#warning").text("");
+		}
+
+		function show_warning(str) {
+			$("#warningdiv").show();
+			$("#warning").text(str);
+        }
+
+		function check_input() {
+			var art = $("#textarea").text();
+
+			if (!art.replace(/\s/g, '').length) {
+				reset_results();
+				reset_warnings();
+				show_error("Please enter an article");
+				return false
+			}
+
+			if (art.split(' ').length >= 700) {		// Because we split by words, not tokens. Let's say 768 words ~= 1024 tokens
+				show_warning("Input text seems quite long. Our model can handle at most 1024 tokens. The text over this limit will be ignored.");
+				return true
+			}
+
+			reset_warnings();
+			reset_errors();
+			return true
+		}
+
+		function summarize() {
+			if (!check_input()) {
+				return
+			}
+
+			show_working();
+
+			var data = {
+				"net_input": [{ "article": $("#textarea").text() }],
+				"extractive": false
+			};
+			$.ajax({
+				type: "POST",
+				url: "/predict",
+				data: JSON.stringify(data),
+				success: function (data) {
+					$("#results").text(data.summaries[0]);
+					$("#results").show();
+					show_done();
+				},
+				failure: function (errMsg) {
+					show_done();
+					alert(errMsg);
+				}
+			});
+		}
+
+		function top_k() {
+			return parseInt($("#ext-repos").text().split(" ")[1]);
+		}
+
+		function topk_plus() {
+			var topk = top_k();
+			$("#ext-repos").text(`Extract ${topk + 1}`);
+		}
+
+		function topk_minus() {
+			var topk = top_k();
+			var new_topk = Math.max(1, topk - 1)
+			$("#ext-repos").text(`Extract ${new_topk}`);
+		}
+
+		function show_ext_working() {
+			$("#ext-repos").hide();
+			$("#ext-actif").show();
+		}
+
+		function show_ext_done() {
+			$("#ext-actif").hide();
+			$("#ext-repos").show();
+		}
+
+		function reset_highlight() {
+			$("#textarea").text($("#textarea").text());
+		}
+
+		function highlight(sentences) {
+			sentences.forEach(function (sentence, index) {
+				var article = $("#textarea").html()
+				var marked_start = article.indexOf(sentence);
+				var marked_end = marked_start + sentence.length;
+				var marked_text = article.substring(0, marked_start) + "<mark style='background-color: #a2d9e2'>" + article.substring(marked_start, marked_end) + "</mark>" + article.substring(marked_end);
+				$("#textarea").html(marked_text);
+			});
+		}
+
+		function ext_summarize() {
+			if (!check_input()) {
+				return
+			}
+
+			show_ext_working();
+
+			var data = {
+				"net_input": [{ "article": $("#textarea").text() }],
+				"top_k": top_k(),
+				"extractive": true
+			};
+			$.ajax({
+				type: "POST",
+				url: "/predict",
+				data: JSON.stringify(data),
+				success: function (data) {
+					reset_highlight();
+					highlight(data.summaries[0]);
+					show_ext_done();
+				},
+				failure: function (errMsg) {
+					show_ext_done();
+					alert(errMsg);
+				}
+			});
+		}
+
+		function updatedefaultarticle() {
+			var selected_art = $("#select").children("option:selected").val();
+			var options = $('#select option');
+			var values = $.map(options, function (option) {
+				return option.value;
+			});
+
+			var art = "";
+			if (selected_art == values[1]){
+				art = "그런데 인간의 죽음문화는 이에서 자신의 이야기를 끝내지 않습니다. 금기문화로서의 죽음문화가 보여주는 또 하나의 사실을 우리는 모든 종교에서 주장하는 살인 또는 살생의 금제에서 발견합니다. 어떤 종교도 '죽이는 일'에 근원적으로 동의하는 경우는 없습니다. '죽이지 말라'는 금령은 모든 계율의 현실적인 핵심을 이룹니다. 그러므로 우리는 '죽이지 않음'이 삶이 직면하는 많은 심각한 문제들에 대한 종국적인 해답이라는 것을 짐작할 수 있습니다. 그러나 그것은 동시에 인간은 스스로 죽음을 초래하는 존재라는 사실도 포함합니다. 인간은 죽음의 처절한 실상을 알고, 두려워하고, 피하려 합니다. 그럼에도 불구하고 그러한 처참한 실상을 스스로 낳습니다. 그런데 더 나아가 이러한 이해는 인간이 스스로 낳은 죽음이 인간이 직면하는 문제의 가장 심각한 핵심이라고 하는 것을 보여주기도 한다는 사실입니다. 종교문화가 지니고 있는 살생 또는 살인의 금령은 인간의 문제의 현실성을 보여주는 가장 구체적인 예입니다. '죽여버림'과 '죽어버림'의 비극이 인간의 가장 근원적인 문제임을 보여주는 것입니다."
+			} else if (selected_art == values[2]){
+				art = "이탈리아도 1990년 방송법을 수정하여 방송의 50%이상을 EU소속 국가의 프로그램으로 채우도록 했으며 96년에는 뉴스, 스포츠 버라이어티쇼, 기타 비영화 프로그램을 제외하고 51%이상을 EU산 프로그램으로 편성하도록 했다. 또 이 51%의 쿼터 중 50%는 다시 이탈리아에서 만든 영화에 배정되어야 하고 그 대상도 프랑스와 마찬가지로 TV용 영화나 여타 프로그램이 아닌 영화에만 한정시킴으로써 한층 더 강력한 쿼터제를 정비해 놓고 있다. 이 밖에 스페인이 비EU국가의 프로그램이 50%를 넘지 못하도록 1993년 방송법을 수정하였고, 포르투갈은 1990년 방송법을 수정하여 프로그램 중 40%는 포르투갈 언어을 사용하는 것으로, 30%는 포르투갈에서 제작한 것으로 편성하도록 했다. 헝가리의 경우도 자국 영화를 1520%이상 방영해야 하며 광고, 뉴스, 스포츠, 게임을 제외한 방송시간의 70%를 유럽산 프로그램으로 편성하고 그 중 51%는 헝가리산이어야 하다고 규정해 놓고 있다."
+			} else if (selected_art == values[3]) {
+                art = "일반적으로 상업영화 시장에서 홈 비디오 시장은 전통적으로 가장 수익성이 높은 시장으로 여겨져 왔지만 독립영화에 있어서는 상황이 매우 다르다. 게다가 근래에는 기존의 비디오 시장이 눈에 띠게 악화 일로를 걷고 있어 더 이상 기존의 비디오 시장으로부터 많은 것을 기대하는 것은 어렵게 되었다. 현재 그 동안 강세를 보여오던 비디오 시장이 장기적인 침체기를 겪는 가운데 서서히 새로운 매체인 DVD에 의해 세대 교체가 이루어지면서 인터넷 VOD 서비스와 같은 기술발전으로 점차 둔화된 성장세를 보이던 비디오시장에 어느 정도 활기를 불어넣어 주고 있는 것도 사실이다. 이것은 상업영화라는 준거틀을 가지고 이야기할 때 들어맞는 상황 분석이기는 하지만, 사실상 독립영화 배급에 있어서 비디오와 DVD 시장은 분명 과거와는 다른 새로운 윈도우의 창출이라고 볼 수 있다. 특히 장편독립영화가 극장에서 개봉하게 됨으로써 이후 비디오/DVD 시장에서도 어느 정도의 시장가치를 확보할 수 있게 되었다. 그러나 여전히 문제가 되는 것은 이렇게 표준화된 배급 방식을 따르지 않는 장편 극영화나 다른 독립영화들의 배급이다. 지난 2-3년 간 비디오나 DVD로 출시된 비-장편독립영화의 수는 극히 적다."
+			} else if (selected_art == values[4]) {
+                art = "뉴런은 ‘안전장치’를 경쟁력으로 내세운다. 이번에 선보이는 한국형 KS1 전동킥보드는 세계 최초 앱 제어식 헬멧 잠금 기능을 도입, 모든 전동킥보드에 안전 헬멧을 장착해 이용자들이 손쉽게 헬멧 착용과 관련된 법규를 준수할 수 있도록 했다. 다양한 첨단 안전 기능들도 탑재했다. GPS 기반으로 운영되며 지오펜싱(Geofencing) 기술을 통해 주행과 주차 가능 범위, 구역에 따라 적정 주행 속도 등이 제어된다. 안전을 강화하기 위해 주행금지, 주차금지 구역 및 속도 제한 구역을 별도로 설정하고 있다.이외에도 ‘음성 가이드’, ‘주행경로 공유’ 기능, 주행 중 넘어지면 응급 지원이 필요한지 확인하고 자동으로 119와 연결시켜 주는 ‘119 응급 지원’ 기능 등을 갖추고 있다. ‘전복 감지’ 기능도 있어 주차된 전동킥보드가 강제로 이동되거나 전복됐을 때 뉴런 운영팀에 즉시 보고되며 재배치가 이루어진다. 5월13일부터 시행되는 도로교통법에 맞춰 이 같은 기능들을 탑재했다는 설명이다."
+			} else if (selected_art == values[5]) {
+                art = "키즈액티비티플랫폼 애기야가자가 위드코로나 시대 안심여행지를 찾는 젊은 부모들의 이목을 집중시키며 괄목할만한 관광업계 불황 속에서도 성장세를 보이고 있다.애기야가자는 자사서비스를 통해 이용자들의 매장별 접속수가 120만건이 넘었고, 검색수는 12만건을 달성했다고 3일 밝혔다.지난해 기준 매월 이용자 1만8000명이 평균적으로 증가했고 앱다운로드수도 지난달 10만건을 돌파한 것으로 집계됐다. 애기야가자의 이같은 성장세는 실제 이용 고객들의 후기와 댓글리뷰를 실시간으로 확인 할 수 있어 ’위드코로나‘ 속에서 믿고 방문할 수 있는 곳들을 편하게 알아볼 수 있도록 하는 ’실용적‘ 서비스가 호응을 얻은 것이 배경으로 분석된다.실제 리뷰수도 1만9664건, 소개장소수도 1만5400건을 넘어서며 전년대비 각각 811%, 203%의 성장세를 보였다."
+			} else if (selected_art == values[6]) {
+                art = "유럽연합(EU)이 내년 3월부터 역내 은행, 자산운용사, 연기금 등 금융기관을 대상으로 `지속가능금융공시 제도(SFDR)`를 실시하면서 국내 기업에도 비상이 걸렸다. 한국 기업에 투자한 유럽 자본의 ESG(환경·책임·투명경영) 관련 정보공개 요구가 한층 거세질 수 있기 때문이다.글로벌 최대 자산운용사로 꼽히는 블랙록은 올해 초 주요 투자기업들에 새로운 기후 현실에 맞설 것을 촉구하면서 \"화석연료로 25% 이상의 수익을 창출하는 기업들을 투자 대상에서 제외할 것\"이라고 선전포고했다. KB금융도 이러한 내용이 담긴 연차 서신을 받았다. 앞으로는 한국 기업들이 월가 자본뿐 아니라 유럽계 자본의 ESG 요구에 직면하게 될 것이라는 얘기다.글로벌 운용사 NN인베스트먼트파트너스(NNIP)에서 책임투자 업무를 담당하는 아드리 하인스브루크 최고지속가능책임자(CSO)는 최근 매일경제와 인터뷰하면서 \"유럽의 ESG 규제가 한국 시장에 영향을 줄 수 있다\"며 \"유럽계 자산운용사가 투자한다면 해당 기업의 사업이 지속가능성에 잘 부합하고 있는지 추가적으로 정보를 공개해달라는 요청을 보내게 될 것\"이라고 밝혔다."
+			}
+
+			$("#textarea").text(art)
+
+			reset_results();
+			reset_errors();
+			reset_warnings();
+		}
+
+		function logslider(position) {
+			// position will be between 0 and 100
+			var minp = 0;
+			var maxp = 100;
+
+			// The result should be between -1 an 10000000
+			var minv = Math.log(1);
+			var maxv = Math.log(7);
+
+			// calculate adjustment factor
+			var scale = (maxv - minv) / (maxp - minp);
+
+			//   console.log((Math.log(0.33 + 2)-minv) / scale + minp);
+			return Math.exp(minv + scale * (position - minp)) - 2;
+		}
+
+	</script>
+</body>
+
+</html>
