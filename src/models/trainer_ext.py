@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 import torch
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 
 import distributed
 from models.reporter_ext import ReportMgr, Statistics
@@ -38,12 +38,12 @@ def build_trainer(args, device_id=-1, model=None, optim=None, tokenizer=None):
         gpu_rank = 0
         n_gpu = 0
 
-    if hasattr(args, 'model_path'):
-        tensorboard_log_dir = args.model_path
-        writer = SummaryWriter(tensorboard_log_dir, comment="Unmt")
-        report_manager = ReportMgr(args.report_every, start_time=-1, tensorboard_writer=writer)
-    else:
-        report_manager = None
+    # if hasattr(args, 'model_path'):
+        # tensorboard_log_dir = args.model_path
+        # writer = SummaryWriter(tensorboard_log_dir, comment="Unmt")
+        # report_manager = ReportMgr(args.report_every, start_time=-1, tensorboard_writer=writer)
+    # else:
+        # report_manager = None
     trainer = Trainer(args, model, optim, grad_accum_count, n_gpu, gpu_rank, report_manager, tokenizer)
 
     def_logger.info(f'gpu_rank: {gpu_rank}, device_id: {device_id}, trainer: {trainer}, model: {model}')

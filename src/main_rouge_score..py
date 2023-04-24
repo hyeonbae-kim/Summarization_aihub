@@ -1,6 +1,6 @@
 from others.utils import rouge_results_to_str, test_rouge, tile
 
-def _report_rouge(self, gold_path, can_path):
+def _report_rouge(gold_path, can_path):
     # self.logger.info("Calculating Rouge")
     print("Calculating Rouge")
     results_dict = test_rouge('../temp', can_path, gold_path)

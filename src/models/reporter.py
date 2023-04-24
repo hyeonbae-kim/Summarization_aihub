@@ -10,18 +10,18 @@ from distributed import all_gather_list
 from others.logging import def_logger
 
 
-def build_report_manager(opt):
-    if opt.tensorboard:
+# def build_report_manager(opt):
+    # if opt.tensorboard:
         # from tensorboardX import SummaryWriter
         # writer = SummaryWriter(opt.tensorboard_log_dir
                             #    + datetime.now().strftime("/%b-%d_%H-%M-%S"),
                             #    comment="Unmt")
-    else:
-        writer = None
+    # else:
+        # writer = None
 
-    report_mgr = ReportMgr(opt.report_every, start_time=-1,
-                           tensorboard_writer=writer)
-    return report_mgr
+    # report_mgr = ReportMgr(opt.report_every, start_time=-1,
+                        #    tensorboard_writer=writer)
+    # return report_mgr
 
 
 class ReportMgrBase(object):

@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 import torch
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 
 import distributed
 from models.reporter import ReportMgr, Statistics

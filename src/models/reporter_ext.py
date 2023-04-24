@@ -8,22 +8,22 @@ from datetime import datetime
 from others.logging import def_logger
 
 
-def build_report_manager(opt):
-    if opt.tensorboard:
+# def build_report_manager(opt):
+    # if opt.tensorboard:
         # from tensorboardX import SummaryWriter
         # tensorboard_log_dir = opt.tensorboard_log_dir
 
-        if not opt.train_from:
-            tensorboard_log_dir += datetime.now().strftime("/%b-%d_%H-%M-%S")
+        # if not opt.train_from:
+            # tensorboard_log_dir += datetime.now().strftime("/%b-%d_%H-%M-%S")
 
         # writer = SummaryWriter(tensorboard_log_dir,
                             #    comment="Unmt")
-    else:
-        writer = None
+    # else:
+        # writer = None
 
-    report_mgr = ReportMgr(opt.report_every, start_time=-1,
-                           tensorboard_writer=writer)
-    return report_mgr
+    # report_mgr = ReportMgr(opt.report_every, start_time=-1,
+                        #    tensorboard_writer=writer)
+    # return report_mgr
 
 
 class ReportMgrBase(object):
