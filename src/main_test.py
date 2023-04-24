@@ -49,8 +49,9 @@ if __name__ == '__main__':
     parser.add_argument("-encoder", default='bert', type=str, choices=['bert', 'baseline'])
     parser.add_argument("-checkpoint_path", default='', type=str)
     parser.add_argument("-mode", default='test', type=str, choices=['train', 'validate', 'test'])
-    parser.add_argument("-bert_data_path", default='/home/hyeonbae/project/kobert_aihub/bert_data/report/report') #../bert_data
-    parser.add_argument("-model_path", default='../test_models/')
+    parser.add_argument("-bert_data_path", default='/data/test/report') #../bert_data
+    parser.add_argument("-bert_data_path", default='/bert_test_data/report/report') #../bert_data
+    parser.add_argument("-model_path", default='../models/')
     parser.add_argument("-result_path", default='../results')
     parser.add_argument("-temp_dir", default='../temp')
 
@@ -106,11 +107,11 @@ if __name__ == '__main__':
 
     parser.add_argument('-visible_gpus', default='-1', type=str)
     parser.add_argument('-gpu_ranks', default='0', type=str)
-    parser.add_argument('-log_file', default='../test_logs/train.log')
+    parser.add_argument('-log_file', default='../logs/train_Abs_multi_report')
     parser.add_argument('-seed', default=666, type=int)
 
     parser.add_argument("-test_all", type=__str2bool, nargs='?', const=True, default=False)
-    parser.add_argument("-test_from", default='/home/hyeonbae/project/kobert_aihub/models/MultiSumAbs_report_512/model_step_20000.pt')
+    parser.add_argument("-test_from", default='../models/MultiSumAbs_report/model_step_20000.pt')
     
     parser.add_argument("-test_start_from", default=-1, type=int)
 
