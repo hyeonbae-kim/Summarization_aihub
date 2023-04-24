@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # common
-LOG_PATH="../test_logs"
+LOG_PATH="/content/Summarization_aihub/logs"
 mkdir -p ${LOG_PATH}
 
 # Train model
@@ -11,23 +11,23 @@ TASK=abs
 #TASK=ext
 # ‘^’ symbol is used to convert the first character of any string to uppercase and
 # ‘^^’ symbol is used to convert the whole string to the uppercase.
-MODEL_PATH="../test_models/MultiSum${TASK^}_${DATASET}_512"
-DATA_PATH="../test_bert_data/${DATASET}/${DATASET}"     # 파일 prefix까지 (예. bert_data/report/report_novel.train.9.bert.pt)
+MODEL_PATH="/content/Summarization_aihub/models/MultiSum${TASK^}_${DATASET}_512"
+DATA_PATH="/content/Summarization_aihub/bert_data/${DATASET}/${DATASET}"     # 파일 prefix까지 (예. bert_data/report/report_novel.train.9.bert.pt)
 python -m train \
 	-task $TASK \
 	-mode train \
 	-model_path $MODEL_PATH \
-	-result_path ../test_results/ \
+	-result_path /content/Summarization_aihub/results/ \
 	-bert_data_path $DATA_PATH \
 	-dec_dropout 0.2 \
 	-sep_optim true \
 	-lr_bert 0.002 \
 	-lr_dec 0.2 \
-	-save_checkpoint_steps 1 \
+	-save_checkpoint_steps 10 \
 	-batch_size 8 \
-	-train_steps 1000 \
-	-report_every 1 \
-	-accum_count 1 \
+	-train_steps 10 \
+	-report_every 10 \
+	-accum_count 10 \
 	-use_bert_emb true \
 	-use_interval true \
 	-warmup_steps_bert 1 \

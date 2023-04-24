@@ -23,17 +23,17 @@ python -m train \
 	-sep_optim true \
 	-lr_bert 0.002 \
 	-lr_dec 0.2 \
-	-save_checkpoint_steps 1000 \
-	-batch_size 16 \
-	-train_steps 20000 \
-	-report_every 100 \
+	-save_checkpoint_steps 10 \
+	-batch_size 8 \
+	-train_steps 1000 \
+	-report_every 10 \
 	-accum_count 10 \
 	-use_bert_emb true \
 	-use_interval true \
-	-warmup_steps_bert 4000 \
-	-warmup_steps_dec 3000 \
+	-warmup_steps_bert 1 \
+	-warmup_steps_dec 1 \
 	-max_pos 256 \
-	-visible_gpus 0,1,2,3 \
+	-visible_gpus 0 \
 	-log_file ${LOG_PATH}/train_${TASK}_multi_${DATASET}_512 \
 	-tokenizer multi \
 	-tgt_bos [unused1] \

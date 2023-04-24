@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # common
-LOG_PATH="../test_logs"
+LOG_PATH="/content/Summarization_aihub/logs"
 mkdir -p ${LOG_PATH}
 
 # Evaluation with test datasets
@@ -11,14 +11,14 @@ TASK=abs
 MODE=test
 # ‘^’ symbol is used to convert the first character of any string to uppercase and
 # ‘^^’ symbol is used to convert the whole string to the uppercase.
-MODEL_PATH="../test_models/MultiSum${TASK^}_${DATASET}_512"
-DATA_PATH="../test_bert_data/${DATASET}/${DATASET}"     # 파일 prefix까지 (예. bert_data/report/report_novel.test.3.bert.pt)
 
+MODEL_PATH="/content/Summarization_aihub/models/MultiSum${TASK^}_${DATASET}_512"
+DATA_PATH="/content/Summarization_aihub/bert_data/${DATASET}/${DATASET}"     # 파일 prefix까지 (예. bert_data/report/report_novel.train.9.bert.pt)
 python -m train \
 	-task $TASK \
 	-mode $MODE \
 	-test_all False \
-	-test_from ${MODEL_PATH}/model_step_4000.pt \
+	-test_from ${MODEL_PATH}/model_step_10.pt \
 	-batch_size 10 \
 	-test_batch_size 10 \
 	-bert_data_path ${DATA_PATH} \
@@ -31,7 +31,7 @@ python -m train \
 	-max_length 200 \
 	-alpha 0.95 \
 	-min_length 8 \
-	-result_path ../test_logs/ \
+	-result_path /content/Summarization_aihub/logs/ \
 	-tokenizer multi \
 	-tgt_bos [unused1] \
 	-tgt_eos [unused2] \

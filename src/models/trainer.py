@@ -131,7 +131,7 @@ class Trainer(object):
         total_stats = Statistics()
         report_stats = Statistics()
         self._start_report_manager(start_time=total_stats.start_time)
-
+    
         while step <= train_steps:
 
             reduce_counter = 0

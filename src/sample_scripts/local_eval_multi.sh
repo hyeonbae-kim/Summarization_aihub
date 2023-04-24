@@ -18,7 +18,7 @@ python -m train \
 	-task $TASK \
 	-mode $MODE \
 	-test_all False \
-	-test_from ${MODEL_PATH}/model_step_20000.pt \
+	-test_from ${MODEL_PATH}/model_step_10.pt \
 	-batch_size 10 \
 	-test_batch_size 10 \
 	-bert_data_path ${DATA_PATH} \
