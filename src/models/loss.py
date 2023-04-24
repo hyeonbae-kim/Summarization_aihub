@@ -126,13 +126,16 @@ class LossComputeBase(nn.Module):
         """
         batch_stats = Statistics()
         shard_state = self._make_shard_state(batch, output)
-        def_logger.debug(
-            f'shard_size: {shard_size}, output.shape: {output.shape}, shard_state["output"].shape: {shard_state["output"].shape}, shard_state["target"].shape: {shard_state["target"].shape}')
+        # def_logger.debug(
+            # f'shard_size: {shard_size}, output.shape: {output.shape}, shard_state["output"].shape: {shard_state["output"].shape}, shard_state["target"].shape: {shard_state["target"].shape}')
+        # print(f'shard_size: {shard_size}, output.shape: {output.shape}, shard_state["output"].shape: {shard_state["output"].shape}, shard_state["target"].shape: {shard_state["target"].shape}')
 
         for shard in shards(shard_state, shard_size):
             loss, stats = self._compute_loss(batch, **shard)
-            def_logger.debug(f'shard["output"].shape: {shard["output"].shape}, shard["target"].shape: {shard["target"].shape}')
-            def_logger.debug(f'loss: {loss}, stats: {repr(stats)}')
+            # def_logger.debug(f'shard["output"].shape: {shard["output"].shape}, shard["target"].shape: {shard["target"].shape}')
+            # print(f'shard["output"].shape: {shard["output"].shape}, shard["target"].shape: {shard["target"].shape}')
+            # def_logger.debug(f'loss: {loss}, stats: {repr(stats)}')
+            # print(f'loss: {loss}, stats: {repr(stats)}')
 
             loss.div(float(normalization)).backward()
             batch_stats.update(stats)

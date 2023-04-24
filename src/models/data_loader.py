@@ -6,6 +6,7 @@ import random
 import torch
 
 from others.logging import def_logger
+from tqdm import tqdm
 
 
 class Batch(object):
@@ -72,8 +73,10 @@ def load_dataset(args, corpus_type, shuffle):
 
     def _lazy_dataset_loader(pt_file, corpus_type):
         dataset = torch.load(pt_file)
-        def_logger.debug('Loading %s dataset from %s, number of examples: %d' %
-                         (corpus_type, pt_file, len(dataset)))
+        # def_logger.debug('Loading %s dataset from %s, number of examples: %d' %
+        #                  (corpus_type, pt_file, len(dataset)))
+        # print('Loading %s dataset from %s, number of examples: %d' %
+                        #  (corpus_type, pt_file, len(dataset)))
         return dataset
 
     # Sort the glob output by file name (by increasing indexes).
@@ -85,6 +88,7 @@ def load_dataset(args, corpus_type, shuffle):
         if (shuffle):
             random.shuffle(pts)
 
+        # for pt in tqdm(pts, desc='pts'):
         for pt in pts:
             yield _lazy_dataset_loader(pt, corpus_type)
     else:
@@ -212,7 +216,8 @@ class DataIterator(object):
                 continue
             minibatch.append(ex)
             size_so_far = self.batch_size_fn(ex, len(minibatch))
-            def_logger.debug(f'size_so_far: {size_so_far}, batch_size: {batch_size}, minibatch: {len(minibatch)}')
+            # print(f'size_so_far: {size_so_far}, batch_size: {batch_size}, minibatch: {len(minibatch)}')
+            # def_logger.debug(f'size_so_far: {size_so_far}, batch_size: {batch_size}, minibatch: {len(minibatch)}')
             if size_so_far == batch_size:
                 yield minibatch
                 minibatch, size_so_far = [], 0

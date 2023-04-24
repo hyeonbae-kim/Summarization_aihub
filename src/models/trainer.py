@@ -8,7 +8,7 @@ import distributed
 from models.reporter import ReportMgr, Statistics
 from others.logging import def_logger
 from others.utils import test_rouge, rouge_results_to_str
-
+from tqdm import tqdm
 
 def _tally_parameters(model):
     n_params = sum([p.nelement() for p in model.parameters()])
@@ -39,18 +39,19 @@ def build_trainer(args, device_id, model, optims, loss):
         gpu_rank = 0
         n_gpu = 0
 
-    tensorboard_log_dir = args.model_path
+    # tensorboard_log_dir = args.model_path
 
-    writer = SummaryWriter(tensorboard_log_dir, comment="Unmt")
+    # writer = SummaryWriter(tensorboard_log_dir, comment="Unmt")
 
-    report_manager = ReportMgr(args.report_every, start_time=-1, tensorboard_writer=writer)
+    # report_manager = ReportMgr(args.report_every, start_time=-1, tensorboard_writer=writer)
 
-    trainer = Trainer(args, model, optims, loss, grad_accum_count, n_gpu, gpu_rank, report_manager)
-
+    # trainer = Trainer(args, model, optims, loss, grad_accum_count, n_gpu, gpu_rank, report_manager)
+    trainer = Trainer(args, model, optims, loss, grad_accum_count, n_gpu, gpu_rank)
     # print(tr)
     if (model):
         n_params = _tally_parameters(model)
-        def_logger.info('* number of parameters: %d' % n_params)
+        # def_logger.info('* number of parameters: %d' % n_params)
+        # print('* number of parameters: %d' % n_params)
 
     return trainer
 
@@ -91,7 +92,7 @@ class Trainer(object):
         self.grad_accum_count = grad_accum_count
         self.n_gpu = n_gpu
         self.gpu_rank = gpu_rank
-        self.report_manager = report_manager
+        # self.report_manager = report_manager
 
         self.loss = loss
 
@@ -118,11 +119,12 @@ class Trainer(object):
         Return:
             None
         """
-        def_logger.info(f'Start training...  train_steps: {train_steps}')
+        # def_logger.info(f'Start training...  train_steps: {train_steps}')
+        print(f'Start training...  train_steps: {train_steps}')
 
         # step =  self.optim._step + 1
         step = self.optims[0]._step + 1
-
+        print(f'step: {step}')
         true_batchs = []
         accum = 0
         normalization = 0
@@ -130,10 +132,9 @@ class Trainer(object):
 
         total_stats = Statistics()
         report_stats = Statistics()
-        self._start_report_manager(start_time=total_stats.start_time)
-    
-        while step <= train_steps:
+        # self._start_report_manager(start_time=total_stats.start_time)
 
+        while step <= train_steps:
             reduce_counter = 0
             for i, batch in enumerate(train_iter):
                 if self.n_gpu == 0 or (i % self.n_gpu == self.gpu_rank):
@@ -141,8 +142,8 @@ class Trainer(object):
                     true_batchs.append(batch)
                     num_tokens = batch.tgt[:, 1:].ne(self.loss.padding_idx).sum()
                     normalization += num_tokens.item()
-                    def_logger.debug(
-                        f'num_tokens: {num_tokens}, normalization: {normalization}, batch.tgt.shape: {batch.tgt.shape}, batch.tgt: {batch.tgt[:2, :10]}')
+                    # def_logger.debug(
+                        # f'num_tokens: {num_tokens}, normalization: {normalization}, batch.tgt.shape: {batch.tgt.shape}, batch.tgt: {batch.tgt[:2, :10]}')
                     accum += 1
                     if accum == self.grad_accum_count:
                         reduce_counter += 1
@@ -154,10 +155,10 @@ class Trainer(object):
                             true_batchs, normalization, total_stats,
                             report_stats)
 
-                        report_stats = self._maybe_report_training(
-                            step, train_steps,
-                            self.optims[0].learning_rate,
-                            report_stats)
+                        # report_stats = self._maybe_report_training(
+                        #     step, train_steps,
+                        #     self.optims[0].learning_rate,
+                        #     report_stats)
 
                         true_batchs = []
                         accum = 0
@@ -166,8 +167,11 @@ class Trainer(object):
                             self._save(step)
 
                         step += 1
+                        
                         if step > train_steps:
                             break
+                        if step % 5 == 0:
+                            print(f'step: {step}')
             train_iter = train_iter_fct()
 
         return total_stats
@@ -339,7 +343,7 @@ class Trainer(object):
             'optims': self.optims,
         }
         checkpoint_path = os.path.join(self.args.model_path, 'model_step_%d.pt' % step)
-        def_logger.info("Saving checkpoint %s" % checkpoint_path)
+        # def_logger.info("Saving checkpoint %s" % checkpoint_path)
         # checkpoint_path = '%s_step_%d.pt' % (FLAGS.model_path, step)
         if (not os.path.exists(checkpoint_path)):
             torch.save(checkpoint, checkpoint_path)

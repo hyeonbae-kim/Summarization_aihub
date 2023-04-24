@@ -7,21 +7,22 @@ import math
 
 import torch
 
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 from others.logging import def_logger
 
 from others.utils import rouge_results_to_str, test_rouge, tile
 from translate.beam import GNMTGlobalScorer
 from transformers import BasicTokenizer
 from tokenization import detokenize, BertKoreanMecabTokenizer
+from tqdm import tqdm
 
 
 def build_predictor(args, tokenizer, symbols, model, logger=None):
     scorer = GNMTGlobalScorer(args.alpha, length_penalty='wu')
 
-    if logger is None:
-        logger = def_logger
-    translator = Translator(args, model, tokenizer, symbols, global_scorer=scorer, logger=logger)
+    # if logger is None:
+    #     logger = def_logger
+    translator = Translator(args, model, tokenizer, symbols, global_scorer=scorer)
     return translator
 
 
@@ -51,9 +52,9 @@ class Translator(object):
                  vocab,
                  symbols,
                  global_scorer=None,
-                 logger=None,
+                #  logger=None,
                  dump_beam=""):
-        self.logger = logger
+        # self.logger = logger
         self.cuda = args.visible_gpus != '-1'
 
         self.args = args
@@ -76,10 +77,10 @@ class Translator(object):
         self.beam_trace = self.dump_beam != ""
         self.beam_accum = None
 
-        if hasattr(args, 'model_path'):
-            tensorboard_log_dir = args.model_path
+        # if hasattr(args, 'model_path'):
+            # tensorboard_log_dir = args.model_path
 
-            self.tensorboard_writer = SummaryWriter(tensorboard_log_dir, comment="Unmt")
+            # self.tensorboard_writer = SummaryWriter(tensorboard_log_dir, comment="Unmt")
 
         if self.beam_trace:
             self.beam_accum = {
@@ -137,7 +138,8 @@ class Translator(object):
             pred_sents = " ".join(self.basic_tokenizer.tokenize(pred_sents))
             gold_sent = " ".join(self.basic_tokenizer.tokenize(gold_sent))
 
-            self.logger.debug(f'pred_sents: {pred_sents}\ngold_sent: {gold_sent}')
+            # self.logger.debug(f'pred_sents: {pred_sents}\ngold_sent: {gold_sent}')
+            # print(f'pred_sents: {pred_sents}\ngold_sent: {gold_sent}')
 
             # Convert tokens to number (pyrouge doesn't support non-english)
             tokens = list(set(pred_sents.split() + gold_sent.split()))
@@ -344,7 +346,7 @@ class Translator(object):
         # pred_results, gold_results = [], []
         ct = 0
         with torch.no_grad():
-            for batch in data_iter:
+            for batch in tqdm(data_iter, desc='data iter'):
                 if(self.args.recall_eval):
                     gold_tgt_len = batch.tgt.size(1)
                     self.min_length = gold_tgt_len + 20
@@ -354,7 +356,8 @@ class Translator(object):
 
                 for trans in translations:
                     pred, gold, src = trans
-                    self.logger.debug(f'pred: {pred}, gold: {gold}, src: {src}')
+                    # self.logger.debug(f'pred: {pred}, gold: {gold}, src: {src}')
+                    # print((f'pred: {pred}, gold: {gold}, src: {src}'))
                     pred_str = pred.replace('[unused0]', '').replace('[unused3]', '').replace('[PAD]', '').replace('[unused1]', '').replace(r' +', ' ').replace(' [unused2] ', '<q>').replace('[unused2]', '').strip()
                     gold_str = gold.strip()
                     if(self.args.recall_eval):
@@ -384,15 +387,21 @@ class Translator(object):
         self.src_out_file.close()
 
         if (step != -1):
-            rouges = self._report_rouge(gold_path, can_path)
-            self.logger.info('Rouges at step %d \n%s' % (step, rouge_results_to_str(rouges)))
-            if self.tensorboard_writer is not None:
-                self.tensorboard_writer.add_scalar('test/rouge1-F', rouges['rouge_1_f_score'], step)
-                self.tensorboard_writer.add_scalar('test/rouge2-F', rouges['rouge_2_f_score'], step)
-                self.tensorboard_writer.add_scalar('test/rougeL-F', rouges['rouge_l_f_score'], step)
+            print('End')
+            # rouges = self._report_rouge(gold_path, can_path)
+            # # self.logger.info('Rouges at step %d \n%s' % (step, rouge_results_to_str(rouges)))
+            # print('Rouges at step %d \n%s' % (step, rouge_results_to_str(rouges)))
+            # print('test/rouge1-F', rouges['rouge_1_f_score'], step)
+            # print('test/rouge2-F', rouges['rouge_2_f_score'], step)
+            # print('test/rougeL-F', rouges['rouge_l_f_score'], step)
+            # # if self.tensorboard_writer is not None:
+            # #     self.tensorboard_writer.add_scalar('test/rouge1-F', rouges['rouge_1_f_score'], step)
+            # #     self.tensorboard_writer.add_scalar('test/rouge2-F', rouges['rouge_2_f_score'], step)
+            # #     self.tensorboard_writer.add_scalar('test/rougeL-F', rouges['rouge_l_f_score'], step)
 
     def _report_rouge(self, gold_path, can_path):
-        self.logger.info("Calculating Rouge")
+        # self.logger.info("Calculating Rouge")
+        print("Calculating Rouge")
         results_dict = test_rouge(self.args.temp_dir, can_path, gold_path)
         return results_dict
 

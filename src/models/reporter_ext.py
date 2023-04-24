@@ -10,14 +10,14 @@ from others.logging import def_logger
 
 def build_report_manager(opt):
     if opt.tensorboard:
-        from tensorboardX import SummaryWriter
-        tensorboard_log_dir = opt.tensorboard_log_dir
+        # from tensorboardX import SummaryWriter
+        # tensorboard_log_dir = opt.tensorboard_log_dir
 
         if not opt.train_from:
             tensorboard_log_dir += datetime.now().strftime("/%b-%d_%H-%M-%S")
 
-        writer = SummaryWriter(tensorboard_log_dir,
-                               comment="Unmt")
+        # writer = SummaryWriter(tensorboard_log_dir,
+                            #    comment="Unmt")
     else:
         writer = None
 

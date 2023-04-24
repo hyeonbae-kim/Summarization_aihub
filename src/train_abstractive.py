@@ -172,20 +172,21 @@ def test_abs_all(args, device_id, data='test'):
 
 
 def test_abs(args, device_id, pt, step, data='test'):
-    __init_logger(args.log_file)
+    # __init_logger(args.log_file)
     device = "cpu" if args.visible_gpus == '-1' else "cuda:" + str(device_id)
     if (pt != ''):
         test_from = pt
     else:
         test_from = args.test_from
-    logger.info('Loading checkpoint from %s' % test_from)
+    # logger.info('Loading checkpoint from %s' % test_from)
+    print('Loading checkpoint from %s' % test_from)
 
     checkpoint = torch.load(test_from, map_location=lambda storage, loc: storage)
     opt = vars(checkpoint['opt'])
     for k in opt.keys():
         if (k in model_flags):
             setattr(args, k, opt[k])
-    logger.debug(args)
+    #logger.debug(args)
 
     model = AbsSummarizer(args, device, checkpoint)
     model.eval()
@@ -193,6 +194,7 @@ def test_abs(args, device_id, pt, step, data='test'):
     test_iter = data_loader.Dataloader(args, load_dataset(args, data, shuffle=False),
                                        args.test_batch_size, device,
                                        shuffle=False, is_test=True)
+    print('Test iter')
     if args.tokenizer == "multi":
         tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased', do_lower_case=False)
     elif args.tokenizer == "mecab":
@@ -200,7 +202,9 @@ def test_abs(args, device_id, pt, step, data='test'):
     symbols = {'BOS': tokenizer.vocab[args.tgt_bos], 'EOS': tokenizer.vocab[args.tgt_eos],
                'PAD': tokenizer.vocab['[PAD]'], 'EOQ': tokenizer.vocab[args.tgt_sent_split]}
     predictor = build_predictor(args, tokenizer, symbols, model, logger)
+    print('build finish')
     predictor.translate(test_iter, step)
+    print('translate finish')
 
 
 def test_text_abs(args, device_id, pt, step):
@@ -246,7 +250,7 @@ def baseline(args, cal_lead=False, cal_oracle=False):
 
 
 def train_abs(args, device_ids):
-    __init_logger(args.log_file)
+    # __init_logger(args.log_file)
     if (args.world_size > 1):
         __train_abs_multi(args, device_ids)
     else:
@@ -254,9 +258,10 @@ def train_abs(args, device_ids):
 
 
 def __train_abs_single(args, device_id):
-    logger.info(str(args))
+    # logger.info(str(args))
     device = "cpu" if args.visible_gpus == '-1' else "cuda"
-    logger.info(f'Device ID : {device_id}, Device : {device}')
+    # logger.info(f'Device ID : {device_id}, Device : {device}')
+    print(f'Device ID : {device_id}, Device : {device}')
     torch.manual_seed(args.seed)
     random.seed(args.seed)
     torch.backends.cudnn.deterministic = True
@@ -266,7 +271,8 @@ def __train_abs_single(args, device_id):
         torch.cuda.manual_seed(args.seed)
 
     if args.train_from != '':
-        logger.info('Loading checkpoint from %s' % args.train_from)
+        # logger.info('Loading checkpoint from %s' % args.train_from)
+        print('Loading checkpoint from %s' % args.train_from)
         checkpoint = torch.load(args.train_from,
                                 map_location=lambda storage, loc: storage)
         opt = vars(checkpoint['opt'])
@@ -277,7 +283,8 @@ def __train_abs_single(args, device_id):
         checkpoint = None
 
     if (args.load_from_extractive != ''):
-        logger.info('Loading bert from extractive model %s' % args.load_from_extractive)
+        # logger.info('Loading bert from extractive model %s' % args.load_from_extractive)
+        print('Loading bert from extractive model %s' % args.load_from_extractive)
         bert_from_extractive = torch.load(args.load_from_extractive, map_location=lambda storage, loc: storage)
         bert_from_extractive = bert_from_extractive['model']
     else:
@@ -298,7 +305,8 @@ def __train_abs_single(args, device_id):
     else:
         optim = [model_builder.build_optim(args, model, checkpoint)]
 
-    logger.info(model)
+    # logger.info(model)
+    # print(model)
 
     if args.tokenizer == "multi":
         tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased', do_lower_case=False)
