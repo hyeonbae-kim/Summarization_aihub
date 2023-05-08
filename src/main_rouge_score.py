@@ -8,7 +8,7 @@ def _report_rouge(gold_path, can_path):
 
 
 if __name__ == '__main__':
-    step = 20000
+    step = 20
     gold_path = '../results'+'.%d.gold' % step
     can_path = '../results.'+'%d.candidate' % step
 
