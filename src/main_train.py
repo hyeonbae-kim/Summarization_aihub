@@ -83,7 +83,7 @@ if __name__ == '__main__':
     parser.add_argument("-save_checkpoint_steps", default=10, type=int)
     parser.add_argument("-accum_count", default=10, type=int)
     parser.add_argument("-report_every", default=10, type=int)
-    parser.add_argument("-train_steps", default=20, type=int)
+    parser.add_argument("-train_steps", default=100, type=int)
     parser.add_argument("-recall_eval", type=__str2bool, nargs='?', const=True, default=False)
 
     parser.add_argument('-visible_gpus', default='0', type=str)
