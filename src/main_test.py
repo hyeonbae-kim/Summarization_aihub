@@ -112,7 +112,7 @@ if __name__ == '__main__':
     parser.add_argument('-seed', default=666, type=int)
 
     parser.add_argument("-test_all", type=__str2bool, nargs='?', const=True, default=False)
-    parser.add_argument("-test_from", default='../models/MultiSumAbs_report/model_step_20.pt')
+    parser.add_argument("-test_from", default='../models/MultiSumAbs_report/model_step_100.pt')
     
     parser.add_argument("-test_start_from", default=-1, type=int)
 
