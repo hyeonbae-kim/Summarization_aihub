@@ -141,7 +141,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-visible_gpus', default='-1', type=str)
-    parser.add_argument("-abs_model", default='/home/hyeonbae/project/aihub_github_test/models/MultiSumAbs_report/model_step_100.pt', type=str)
+    parser.add_argument("-abs_model", default='/content/Summarization_aihub/models/MultiSumAbs_report_512/model_step_20000.pt', type=str)
     parser.add_argument("-ext_model", default='', type=str)
     parser.add_argument("-checkpoint_path", default='')
     parser.add_argument("-temp_dir", default='../temp_dir')
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     # k = Kamino(Presumm, local_worker_devices=local_worker_devices, frontdoor_port=3248, queue_port=3249, gather_port=3250,
               #  result_port=3251, skip_port=3252, control_port=3253, port=8001, batch_size=4,
               #  args=args)
-    print(output.predict(data='/home/hyeonbae/project/aihub_github_test/data/test/report_briefing.test.9.bert.pt'))
+    print(output.predict(data='/content/Summarization_aihub/data/test/report_briefing.test.3.bert.pt'))
     
 
 
