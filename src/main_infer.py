@@ -6,6 +6,7 @@ from typing import List, Union
 # from kamino import ProdModel, Kamino
 # from starlette.responses import FileResponse
 from kss import split_sentences
+import gradio as gr
 
 from tokenization import BertKoreanMecabTokenizer
 from models.model_builder import AbsSummarizer, ExtSummarizer
@@ -189,9 +190,12 @@ if __name__ == "__main__":
     # k = Kamino(Presumm, local_worker_devices=local_worker_devices, frontdoor_port=3248, queue_port=3249, gather_port=3250,
               #  result_port=3251, skip_port=3252, control_port=3253, port=8001, batch_size=4,
               #  args=args)
-    print(output.predict(data='/content/Summarization_aihub/data/test/report_briefing.test.3.bert.pt'))
+    
+    #print(output.predict(data='/content/Summarization_aihub/data/test/report_briefing.test.3.bert.pt'))
     
 
+    demo = gr.Interface(fn=output.predict, inputs=gr.File(label='Input File'), outputs="text")
+    demo.launch(share=True)
 
     # @k.app.get("/")
     # def index():
